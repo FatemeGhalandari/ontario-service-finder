@@ -1,0 +1,46 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+dist/
+build/
+
+# Local environment variables
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# Logs
+logs/
+*.log
+
+# OS & editor files
+.DS_Store
+Thumbs.db
+
+# Vite cache
+frontend/.vite/
+frontend/node_modules/
+
+# Backend build
+backend/dist/
+backend/node_modules/
+
+# Prisma
+backend/prisma/dev.db
+backend/prisma/*.db-journal
+backend/prisma/migrations/
+
+# Terraform
+infra/.terraform/
+infra/.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.backup
+
+# Docker
+docker-data/
