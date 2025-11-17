@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "rootDir": "./src",
+    "outDir": "./dist",
+
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+
+    // Turn this off for now, since you are using classic CommonJS style.
+    "verbatimModuleSyntax": false,
+
+    "strict": true,
+    "skipLibCheck": true
+  }
+}
