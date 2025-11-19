@@ -8,10 +8,17 @@ generator client {
 }
 
 model Service {
-  id        Int      @id @default(autoincrement())
-  name      String
-  address   String
-  city      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         Int      @id @default(autoincrement())
+  name       String
+  address    String
+  city       String
+
+  // New optional fields
+  category   String?   // e.g. "Health", "Library", "Community centre"
+  phone      String?
+  website    String?
+  postalCode String?
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
