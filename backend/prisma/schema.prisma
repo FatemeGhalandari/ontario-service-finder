@@ -12,12 +12,14 @@ model Service {
   name       String
   address    String
   city       String
-
-  // New optional fields
   category   String?   // e.g. "Health", "Library", "Community centre"
   phone      String?
   website    String?
   postalCode String?
+
+   // geographic location
+  latitude   Float?
+  longitude  Float?
 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
