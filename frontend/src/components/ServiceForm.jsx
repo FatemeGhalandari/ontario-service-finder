@@ -14,6 +14,9 @@ export default function ServiceForm({
   const [website, setWebsite] = useState("");
   const [postalCode, setPostalCode] = useState("");
 
+  const [latitude, setLatitude] = useState("");
+  const [longitude, setLongitude] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -26,6 +29,13 @@ export default function ServiceForm({
     setPhone(initialValues?.phone || "");
     setWebsite(initialValues?.website || "");
     setPostalCode(initialValues?.postalCode || "");
+    setLatitude(
+      initialValues?.latitude != null ? String(initialValues.latitude) : ""
+    );
+    setLongitude(
+      initialValues?.longitude != null ? String(initialValues.longitude) : ""
+    );
+
     setError("");
   }, [initialValues]);
 
@@ -46,6 +56,8 @@ export default function ServiceForm({
       phone: phone.trim() || null,
       website: website.trim() || null,
       postalCode: postalCode.trim() || null,
+      latitude: latitude.trim() || null,
+      longitude: longitude.trim() || null,
     };
 
     try {
@@ -137,7 +149,6 @@ export default function ServiceForm({
             placeholder="e.g. M5V 2T6"
           />
         </div>
-
         <div style={styles.field}>
           <label style={styles.label}>Phone</label>
           <input
@@ -146,6 +157,27 @@ export default function ServiceForm({
             onChange={(e) => setPhone(e.target.value)}
             placeholder="e.g. 416-555-1234"
           />
+        </div>{" "}
+        <div style={styles.row}>
+          <div style={styles.field}>
+            <label style={styles.label}>Latitude</label>
+            <input
+              style={styles.input}
+              value={latitude}
+              onChange={(e) => setLatitude(e.target.value)}
+              placeholder="e.g. 43.65107"
+            />
+          </div>
+
+          <div style={styles.field}>
+            <label style={styles.label}>Longitude</label>
+            <input
+              style={styles.input}
+              value={longitude}
+              onChange={(e) => setLongitude(e.target.value)}
+              placeholder="e.g. -79.347015"
+            />
+          </div>
         </div>
       </div>
 
