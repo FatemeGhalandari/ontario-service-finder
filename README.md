@@ -56,19 +56,15 @@ ontario-service-finder/
   README.md
 ```
 
-backend/ – Express API, Prisma models, auth, validation, seed scripts.
-
-frontend/ – React UI (search, filters, admin CRUD).
-
 # Backend
 
 ## Prerequisites
 
-Node.js (LTS)
+- **Node.js (LTS)**
 
-PostgreSQL running locally
+- **PostgreSQL running locally**
 
-DATABASE_URL configured in backend/.env
+- **DATABASE_URL configured in backend/.env**
 
 Example backend/.env:
 
@@ -80,8 +76,8 @@ ADMIN_EMAIL="admin@example.com"
 ADMIN_PASSWORD="password123"
 ```
 
-Replace YOUR_PASSWORD with your actual Postgres password.
-Change JWT_SECRET, ADMIN_EMAIL and ADMIN_PASSWORD to your own values.
+Replace `YOUR_PASSWORD` with your actual Postgres password.
+Change `JWT_SECRET`, `ADMIN_EMAIL` and `ADMIN_PASSWORD` to your own values.
 
 ## Install dependencies and run migrations
 
@@ -92,7 +88,7 @@ npm install
 
 ## Run initial migration
 
-npx prisma migrate dev --name init
+`npx prisma migrate dev --name init`
 
 If you later change the Prisma schema in prisma/schema.prisma, run another migration:
 
@@ -140,7 +136,7 @@ List services with search, filters, and pagination.
 Get a single service by id.
 
 `POST /api/auth/login`
-Admin login. Returns a JWT if email and password match ADMIN_EMAIL and ADMIN_PASSWORD from .env.
+Admin login. Returns a JWT if email and password match `ADMIN_EMAIL` and `ADMIN_PASSWORD` from `.env`.
 
 `POST /api/services`
 Create a new service. Requires admin JWT.
@@ -153,22 +149,22 @@ Delete a service. Requires admin JWT.
 
 ## Filters and pagination
 
-GET /api/services accepts these query parameters:
+`GET /api/services` accepts these query parameters:
 
-q – free text search across name, address, city, category, postal code
+- **q**: free text search across name, address, city, category, postal code
 
-city – exact city match, case insensitive
+- **city**: exact city match, case insensitive
 
-category – exact category match, case insensitive
+- **category**: exact category match, case insensitive
 
-page – page number (1-based)
+- **page**: page number (1-based)
 
-pageSize – items per page (min 1, max 100)
+- **pageSize**: items per page (min 1, max 100)
 
 Example:
-
-`GET /api/services?q=health&city=Toronto&category=Health&page=2&pageSize=10`
-
+```
+GET /api/services?q=health&city=Toronto&category=Health&page=2&pageSize=10
+```
 Response shape:
 
 ```
@@ -213,20 +209,20 @@ There is also a global error handler that returns a standard JSON shape for unha
 
 ## Backend architecture
 
-index.js
+- **index.js**:    
 Express app setup, middleware, logging, health route, route registration, global error handler.
 
-routes/
+- **routes/**:    
 
-authRoutes.js – login route.
+- authRoutes.js – login route.
 
-serviceRoutes.js – CRUD routes for services.
+- serviceRoutes.js – CRUD routes for services.
 
-controllers/
+- **controllers/** :    
 
-authController.js – login logic, JWT creation.
+- **authController.js**:  login logic, JWT creation.
 
-serviceController.js – list, get, create, update, delete services.
+- **serviceController.js**: list, get, create, update, delete services.
 
 lib/prisma.js
 Shared Prisma client instance.
@@ -296,17 +292,17 @@ Email and password come from backend .env (ADMIN_EMAIL / ADMIN_PASSWORD).
 
 ## Successful login:
 
-Stores a JWT in localStorage.
+- Stores a JWT in localStorage.
 
-Sends Authorization: Bearer <token> for create / update / delete.
+- Sends Authorization: Bearer <token> for create / update / delete.
 
-Shows the Service form and Edit/Delete buttons.
+- Shows the Service form and Edit/Delete buttons.
 
-Logout clears the token and hides admin actions.
+- Logout clears the token and hides admin actions.
 
-Running everything together
+- Running everything together
 
-Start PostgreSQL and ensure DATABASE_URL is correct in backend/.env.
+- Start PostgreSQL and ensure DATABASE_URL is correct in backend/.env.
 
 From backend/:
 
