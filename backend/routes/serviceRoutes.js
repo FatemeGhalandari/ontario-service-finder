@@ -1,6 +1,7 @@
 const express = require("express");
 const {
   listServices,
+  exportServices,
   getServiceById,
   createService,
   updateService,
@@ -13,6 +14,9 @@ const {
 } = require("../middleware/authMiddleware");
 
 const router = express.Router();
+
+// /api/services/export
+router.get("/export", exportServices);
 
 // /api/services/
 router.get("/", listServices);
