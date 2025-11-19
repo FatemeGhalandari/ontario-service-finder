@@ -58,6 +58,15 @@ export default function ServiceDetails({ service, onClose }) {
       </div>
 
       <div style={styles.row}>
+        <span style={styles.label}>Location:</span>
+        <span>
+          {service.latitude != null && service.longitude != null
+            ? `${service.latitude}, ${service.longitude}`
+            : "-"}
+        </span>
+      </div>
+
+      <div style={styles.row}>
         <span style={styles.label}>Created at:</span>
         <span>{formatDate(service.createdAt)}</span>
       </div>
