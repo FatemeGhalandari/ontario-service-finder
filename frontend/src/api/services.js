@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:4000/api";
+export const API_BASE_URL = "http://localhost:4000/api";
 
 let authToken = null;
 
@@ -14,7 +14,7 @@ function buildAuthHeaders(extra = {}) {
   return headers;
 }
 
-export async function getServices(params = {}) {
+export function buildServicesQueryString(params = {}) {
   const searchParams = new URLSearchParams();
 
   if (params.q && params.q.trim()) {
@@ -37,7 +37,11 @@ export async function getServices(params = {}) {
     searchParams.set("pageSize", String(params.pageSize));
   }
 
-  const queryString = searchParams.toString();
+  return searchParams.toString();
+}
+export async function getServices(params = {}) {
+  const queryString = buildServicesQueryString(params);
+
   const url = queryString
     ? `${API_BASE_URL}/services?${queryString}`
     : `${API_BASE_URL}/services`;
