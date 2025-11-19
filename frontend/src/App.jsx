@@ -2,14 +2,19 @@ import { useEffect, useState } from "react";
 import ServiceForm from "./components/ServiceForm";
 import ServiceList from "./components/ServiceList";
 import ServiceDetails from "./components/ServiceDetails";
+
 import {
+  API_BASE_URL,
+  buildServicesQueryString,
   getServices,
   createService,
   updateService,
   deleteService,
   setAuthToken,
 } from "./api/services";
+
 import { login as apiLogin } from "./api/auth";
+import ServiceMap from "./components/ServiceMap";
 
 const CATEGORY_OPTIONS = [
   "Health",
@@ -40,6 +45,8 @@ function App() {
   const [editingService, setEditingService] = useState(null);
   const [selectedService, setSelectedService] = useState(null);
 
+  const [viewMode, setViewMode] = useState("list"); // 'list' or 'map'
+
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
   const [total, setTotal] = useState(0);
@@ -51,6 +58,16 @@ function App() {
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [loginError, setLoginError] = useState("");
+
+  const exportQuery = buildServicesQueryString({
+    q: searchTerm,
+    city: cityFilter,
+    category: categoryFilter,
+  });
+
+  const exportUrl = exportQuery
+    ? `${API_BASE_URL}/services/export?${exportQuery}`
+    : `${API_BASE_URL}/services/export`;
 
   // Load services with current filters/pagination, optionally overriding some
   async function loadServices(overrides = {}) {
@@ -254,6 +271,13 @@ function App() {
           >
             Clear
           </button>
+          <a
+            href={exportUrl}
+            style={styles.filterButtonSecondary}
+            download="services.csv"
+          >
+            Export CSV
+          </a>
         </div>
       </form>
 
@@ -261,7 +285,33 @@ function App() {
         <p>Loading services...</p>
       ) : (
         <>
-          {total > 0 && (
+          <div style={styles.viewToggle}>
+            <span>View:</span>
+            <button
+              type="button"
+              style={
+                viewMode === "list"
+                  ? styles.viewToggleButtonActive
+                  : styles.viewToggleButton
+              }
+              onClick={() => setViewMode("list")}
+            >
+              List
+            </button>
+            <button
+              type="button"
+              style={
+                viewMode === "map"
+                  ? styles.viewToggleButtonActive
+                  : styles.viewToggleButton
+              }
+              onClick={() => setViewMode("map")}
+            >
+              Map
+            </button>
+          </div>
+
+          {viewMode === "list" && total > 0 && (
             <div style={styles.paginationBar}>
               <button
                 type="button"
@@ -294,26 +344,32 @@ function App() {
             </div>
           )}
 
-          <ServiceList
-            services={services}
-            onDelete={isAdmin ? handleDelete : undefined}
-            onEdit={
-              isAdmin
-                ? (service) => {
-                    setEditingService(service);
-                    setSelectedService(null);
-                  }
-                : undefined
-            }
-            onView={(service) => setSelectedService(service)}
-            isAdmin={isAdmin}
-          />
+          {viewMode === "list" ? (
+            <>
+              <ServiceList
+                services={services}
+                onDelete={isAdmin ? handleDelete : undefined}
+                onEdit={
+                  isAdmin
+                    ? (service) => {
+                        setEditingService(service);
+                        setSelectedService(null);
+                      }
+                    : undefined
+                }
+                onView={(service) => setSelectedService(service)}
+                isAdmin={isAdmin}
+              />
 
-          {selectedService && (
-            <ServiceDetails
-              service={selectedService}
-              onClose={() => setSelectedService(null)}
-            />
+              {selectedService && (
+                <ServiceDetails
+                  service={selectedService}
+                  onClose={() => setSelectedService(null)}
+                />
+              )}
+            </>
+          ) : (
+            <ServiceMap services={services} />
           )}
         </>
       )}
@@ -421,6 +477,27 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     minWidth: 200,
+  },
+  viewToggle: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 12,
+  },
+  viewToggleButton: {
+    padding: "6px 12px",
+    borderRadius: 4,
+    border: "1px solid #ccc",
+    backgroundColor: "#fff",
+    cursor: "pointer",
+  },
+  viewToggleButtonActive: {
+    padding: "6px 12px",
+    borderRadius: 4,
+    border: "1px solid #007bff",
+    backgroundColor: "#007bff",
+    color: "#fff",
+    cursor: "pointer",
   },
 };
 
