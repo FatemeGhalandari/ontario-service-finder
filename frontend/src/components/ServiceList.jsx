@@ -1,4 +1,10 @@
-export default function ServiceList({ services, onDelete, onEdit, onView }) {
+export default function ServiceList({
+  services,
+  onDelete,
+  onEdit,
+  onView,
+  isAdmin = false,
+}) {
   if (!services.length) {
     return <p>No services yet. Add one above.</p>;
   }
@@ -46,15 +52,19 @@ export default function ServiceList({ services, onDelete, onEdit, onView }) {
                 >
                   View
                 </button>
-                <button style={styles.smallButton} onClick={() => onEdit(s)}>
-                  Edit
-                </button>
-                <button
-                  style={styles.deleteButton}
-                  onClick={() => onDelete(s.id)}
-                >
-                  Delete
-                </button>
+                {isAdmin && onEdit && (
+                  <button style={styles.smallButton} onClick={() => onEdit(s)}>
+                    Edit
+                  </button>
+                )}
+                {isAdmin && onDelete && (
+                  <button
+                    style={styles.deleteButton}
+                    onClick={() => onDelete(s.id)}
+                  >
+                    Delete
+                  </button>
+                )}
               </td>
             </tr>
           ))}
