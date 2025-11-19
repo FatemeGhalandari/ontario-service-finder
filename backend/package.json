@@ -7,7 +7,8 @@
     "start": "node index.js",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "seed": "node scripts/seedServices.js"
+    "seed": "node scripts/seedServices.js",
+    "test": "jest"
   },
   "keywords": [],
   "author": "",
@@ -30,8 +31,10 @@
     "@types/express": "^5.0.5",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.10.1",
+    "jest": "^30.2.0",
     "nodemon": "^3.1.11",
     "prisma": "^6.19.0",
+    "supertest": "^7.1.4",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.9.3"
   }
