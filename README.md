@@ -88,7 +88,9 @@ npm install
 
 ## Run initial migration
 
-`npx prisma migrate dev --name init`
+```
+npx prisma migrate dev --name init
+```
 
 If you later change the Prisma schema in prisma/schema.prisma, run another migration:
 
@@ -162,9 +164,11 @@ Delete a service. Requires admin JWT.
 - **pageSize**: items per page (min 1, max 100)
 
 Example:
+
 ```
 GET /api/services?q=health&city=Toronto&category=Health&page=2&pageSize=10
 ```
+
 Response shape:
 
 ```
@@ -209,32 +213,25 @@ There is also a global error handler that returns a standard JSON shape for unha
 
 ## Backend architecture
 
-- **index.js**:    
-Express app setup, middleware, logging, health route, route registration, global error handler.
+- **index.js**: Express app setup, middleware, logging, health route, route registration, global error handler.
 
-- **routes/**:    
+- **routes/**:
 
-- authRoutes.js – login route.
+  - **authRoutes.js**: login route.
+  - **serviceRoutes.js**: CRUD routes for services.
 
-- serviceRoutes.js – CRUD routes for services.
+- **controllers/**:
 
-- **controllers/** :    
+  - **authController.js**: login logic, JWT creation.
+  - **serviceController.js**: list, get, create, update, delete services.
 
-- **authController.js**:  login logic, JWT creation.
+- **lib/prisma.js**: Shared Prisma client instance.
 
-- **serviceController.js**: list, get, create, update, delete services.
+- **validation/serviceSchemas.js**: Zod schemas for service create and update, plus helper to format validation errors.
 
-lib/prisma.js
-Shared Prisma client instance.
+- **middleware/authMiddleware.js**:JWT authentication and requireAdmin checks for protected routes.
 
-validation/serviceSchemas.js
-Zod schemas for service create and update, plus helper to format validation errors.
-
-middleware/authMiddleware.js
-JWT authentication and requireAdmin checks for protected routes.
-
-scripts/seedServices.js
-Seed script for local development data.
+- **scripts/seedServices.js**: Seed script for local development data.
 
 # Frontend
 
@@ -260,48 +257,29 @@ If you change the backend URL, update `API_BASE_URL` in:
 
 ## Frontend features
 
-Service list
-
-Table of services.
-
-Pagination with Previous and Next buttons.
-
-Display of total count and current range (e.g. “showing 1–10 of 42”).
-
-Search and filters
-
-Text search across multiple fields (name, address, city, category, postal code).
-
-City filter input.
-
-Category dropdown based on a predefined list of categories (Health, Housing, Food Bank, Library, etc.).
-
-Service details panel
-
-Name, category, address, city, postal code.
-
-Phone number and website link.
-
-Created and updated timestamps.
-
-Admin functionality
-
-Admin login form on the main page.
-
-Email and password come from backend .env (ADMIN_EMAIL / ADMIN_PASSWORD).
+- Service list
+- Table of services.
+- Pagination with Previous and Next buttons.
+- Display of total count and current range (e.g. “showing 1–10 of 42”).
+- Search and filters
+- Text search across multiple fields (name, address, city, category, postal code).
+- City filter input.
+- Category dropdown based on a predefined list of categories (Health, Housing, Food Bank, Library, etc.).
+- Service details panel
+- Name, category, address, city, postal code.
+- Phone number and website link.
+- Created and updated timestamps.
+- Admin functionality
+- Admin login form on the main page.
+- Email and password come from backend .env (ADMIN_EMAIL / ADMIN_PASSWORD).
 
 ## Successful login:
 
 - Stores a JWT in localStorage.
-
 - Sends Authorization: Bearer <token> for create / update / delete.
-
 - Shows the Service form and Edit/Delete buttons.
-
 - Logout clears the token and hides admin actions.
-
 - Running everything together
-
 - Start PostgreSQL and ensure DATABASE_URL is correct in backend/.env.
 
 From backend/:
