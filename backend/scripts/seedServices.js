@@ -15,6 +15,8 @@ async function main() {
       phone: "416-555-1001",
       website: "https://example-health-toronto.ca",
       postalCode: "M5H 2M9",
+      latitude: 43.65107,
+      longitude: -79.347015,
     },
     {
       name: "Parkdale Community Legal Clinic",
@@ -24,6 +26,8 @@ async function main() {
       phone: "416-555-2002",
       website: "https://example-legal-parkdale.ca",
       postalCode: "M6K 2N6",
+      latitude: 43.639,
+      longitude: -79.4305,
     },
     {
       name: "Eastside Food Bank",
@@ -33,6 +37,8 @@ async function main() {
       phone: "905-555-3003",
       website: "",
       postalCode: "L8H 1A1",
+      latitude: 43.2557,
+      longitude: -79.8711,
     },
     {
       name: "Ottawa Community Housing Resource Centre",
@@ -42,6 +48,8 @@ async function main() {
       phone: "613-555-4004",
       website: "ottawa-housing-example.ca",
       postalCode: "K1R 6P9",
+      latitude: 45.4215,
+      longitude: -75.6972,
     },
     {
       name: "North York Youth Employment Hub",
@@ -51,6 +59,8 @@ async function main() {
       phone: "416-555-5005",
       website: "",
       postalCode: "M2N 6L9",
+      latitude: 43.7805,
+      longitude: -79.4156,
     },
     {
       name: "Scarborough Women's Shelter",
@@ -60,6 +70,8 @@ async function main() {
       phone: "416-555-6006",
       website: "",
       postalCode: "M1P 4X1",
+      latitude: 43.7735,
+      longitude: -79.251,
     },
     {
       name: "Waterloo Newcomer Settlement Centre",
@@ -69,6 +81,8 @@ async function main() {
       phone: "519-555-7007",
       website: "https://waterloo-newcomers-example.ca",
       postalCode: "N2J 1P2",
+      latitude: 43.4643,
+      longitude: -80.5204,
     },
     {
       name: "Mississauga Seniors Recreation Centre",
@@ -78,6 +92,8 @@ async function main() {
       phone: "905-555-8008",
       website: "",
       postalCode: "L5H 1G3",
+      latitude: 43.5527,
+      longitude: -79.5937,
     },
     {
       name: "Downtown Toronto Public Library Branch",
@@ -87,6 +103,8 @@ async function main() {
       phone: "416-555-9009",
       website: "torontopubliclibrary.ca",
       postalCode: "M4W 2G8",
+      latitude: 43.6712,
+      longitude: -79.3868,
     },
     {
       name: "Kingston Mental Health Support Centre",
@@ -96,6 +114,8 @@ async function main() {
       phone: "613-555-1010",
       website: "",
       postalCode: "K7L 1B4",
+      latitude: 44.2312,
+      longitude: -76.486,
     },
   ];
 
