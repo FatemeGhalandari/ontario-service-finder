@@ -7,6 +7,8 @@ const { ZodError, formatZodError } = require("./validation/serviceSchemas");
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+const authRoutes = require("./routes/authRoutes");
+
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -26,6 +28,12 @@ app.get("/", (req, res) => {
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
+
+// Auth routes
+app.use("/api/auth", authRoutes);
+
+// Service routes
+app.use("/api/services", serviceRoutes);
 
 // Service routes
 app.use("/api/services", serviceRoutes);
