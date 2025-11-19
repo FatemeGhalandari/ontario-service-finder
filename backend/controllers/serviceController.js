@@ -6,9 +6,7 @@ const {
   ZodError,
 } = require("../validation/serviceSchemas");
 
-async function listServices(req, res, next) {
-  const { q, city, category, page = "1", pageSize = "10" } = req.query;
-
+function buildServiceWhereClause({ q, city, category }) {
   const where = {};
 
   if (q && q.trim()) {
@@ -34,6 +32,52 @@ async function listServices(req, res, next) {
       mode: "insensitive",
     };
   }
+
+  return where;
+}
+
+function parseCoordinate(value, min, max, fieldName) {
+  if (value === undefined || value === null || value === "") {
+    return null;
+  }
+  const num = Number(value);
+  if (Number.isNaN(num)) {
+    throw new Error(`Invalid ${fieldName}`);
+  }
+  if (num < min || num > max) {
+    throw new Error(`Invalid ${fieldName}`);
+  }
+  return num;
+}
+
+async function listServices(req, res, next) {
+  const { q, city, category, page = "1", pageSize = "10" } = req.query;
+
+  const where = buildServiceWhereClause({ q, city, category });
+
+  // if (q && q.trim()) {
+  //   where.OR = [
+  //     { name: { contains: q, mode: "insensitive" } },
+  //     { address: { contains: q, mode: "insensitive" } },
+  //     { city: { contains: q, mode: "insensitive" } },
+  //     { category: { contains: q, mode: "insensitive" } },
+  //     { postalCode: { contains: q, mode: "insensitive" } },
+  //   ];
+  // }
+
+  // if (city && city.trim()) {
+  //   where.city = {
+  //     equals: city.trim(),
+  //     mode: "insensitive",
+  //   };
+  // }
+
+  // if (category && category.trim()) {
+  //   where.category = {
+  //     equals: category.trim(),
+  //     mode: "insensitive",
+  //   };
+  // }
 
   const pageNumber = Math.max(parseInt(page, 10) || 1, 1);
   const perPage = Math.min(Math.max(parseInt(pageSize, 10) || 10, 1), 100);
@@ -63,6 +107,71 @@ async function listServices(req, res, next) {
   }
 }
 
+async function exportServices(req, res, next) {
+  const { q, city, category } = req.query;
+  const where = buildServiceWhereClause({ q, city, category });
+
+  try {
+    const services = await prisma.service.findMany({
+      where,
+      orderBy: [{ city: "asc" }, { name: "asc" }],
+    });
+
+    const headers = [
+      "id",
+      "name",
+      "address",
+      "city",
+      "category",
+      "phone",
+      "website",
+      "postalCode",
+      "latitude",
+      "longitude",
+      "createdAt",
+      "updatedAt",
+    ];
+
+    function escapeCsv(value) {
+      if (value === null || value === undefined) return "";
+      const s = String(value);
+      if (s.includes('"') || s.includes(",") || s.includes("\n")) {
+        return `"${s.replace(/"/g, '""')}"`;
+      }
+      return s;
+    }
+
+    const rows = services.map((s) => [
+      s.id,
+      s.name,
+      s.address,
+      s.city,
+      s.category || "",
+      s.phone || "",
+      s.website || "",
+      s.postalCode || "",
+      s.latitude ?? "",
+      s.longitude ?? "",
+      s.createdAt?.toISOString?.() || "",
+      s.updatedAt?.toISOString?.() || "",
+    ]);
+
+    const csvLines = [
+      headers.join(","),
+      ...rows.map((row) => row.map(escapeCsv).join(",")),
+    ];
+
+    const csv = csvLines.join("\n");
+
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", 'attachment; filename="services.csv"');
+    res.status(200).send(csv);
+  } catch (err) {
+    console.error("Error exporting services", err);
+    next(err);
+  }
+}
+
 async function getServiceById(req, res, next) {
   const id = Number(req.params.id);
   if (Number.isNaN(id)) {
@@ -85,6 +194,18 @@ async function createService(req, res, next) {
   try {
     const parsed = serviceCreateSchema.parse(req.body);
 
+    let latitude = null;
+    let longitude = null;
+
+    try {
+      latitude = parseCoordinate(req.body.latitude, -90, 90, "latitude");
+      longitude = parseCoordinate(req.body.longitude, -180, 180, "longitude");
+    } catch (coordErr) {
+      return res
+        .status(400)
+        .json({ error: coordErr.message || "Invalid coordinates" });
+    }
+
     const newService = await prisma.service.create({
       data: {
         name: parsed.name,
@@ -94,6 +215,8 @@ async function createService(req, res, next) {
         phone: parsed.phone || null,
         website: parsed.website || null,
         postalCode: parsed.postalCode || null,
+        latitude,
+        longitude,
       },
     });
 
@@ -124,6 +247,29 @@ async function updateService(req, res, next) {
 
     const parsed = serviceUpdateSchema.parse(req.body);
 
+    let latitude = existing.latitude;
+    let longitude = existing.longitude;
+
+    if ("latitude" in req.body) {
+      try {
+        latitude = parseCoordinate(req.body.latitude, -90, 90, "latitude");
+      } catch (coordErr) {
+        return res
+          .status(400)
+          .json({ error: coordErr.message || "Invalid latitude" });
+      }
+    }
+
+    if ("longitude" in req.body) {
+      try {
+        longitude = parseCoordinate(req.body.longitude, -180, 180, "longitude");
+      } catch (coordErr) {
+        return res
+          .status(400)
+          .json({ error: coordErr.message || "Invalid longitude" });
+      }
+    }
+
     const updated = await prisma.service.update({
       where: { id },
       data: {
@@ -139,6 +285,8 @@ async function updateService(req, res, next) {
           parsed.postalCode !== undefined
             ? parsed.postalCode
             : existing.postalCode,
+        latitude,
+        longitude,
       },
     });
 
@@ -177,6 +325,7 @@ async function deleteService(req, res, next) {
 
 module.exports = {
   listServices,
+  exportServices,
   getServiceById,
   createService,
   updateService,
