@@ -4,6 +4,23 @@ A full stack web app for finding community services and facilities across Ontari
 
 The app lets users search, filter, and view details for services such as health clinics, food banks, housing support, libraries, and community centres. Admins can log in to manage the directory.
 
+## Table of contents
+
+- [Tech stack](#tech-stack)
+- [Project structure](#project-structure)
+- [Backend](#backend)
+  - [Prerequisites](#prerequisites)
+  - [Install dependencies and run migrations](#install-dependencies-and-run-migrations)
+  - [Seed sample data](#seed-sample-data)
+  - [Run the backend API](#run-the-backend-api)
+  - [Filters and pagination](#filters-and-pagination)
+  - [Validation and error handling](#validation-and-error-handling)
+  - [Backend architecture](#backend-architecture)
+- [Frontend](#frontend)
+  - [Install and run](#install-and-run)
+  - [Frontend features](#frontend-features)
+- [Successful login](#successful-login)
+
 ## Tech stack
 
 - **Frontend**: React (TypeScript environment), Fetch API
@@ -273,7 +290,7 @@ If you change the backend URL, update `API_BASE_URL` in:
 - Admin login form on the main page.
 - Email and password come from backend .env (ADMIN_EMAIL / ADMIN_PASSWORD).
 
-## Successful login:
+# Successful login
 
 - Stores a JWT in localStorage.
 - Sends Authorization: Bearer <token> for create / update / delete.
