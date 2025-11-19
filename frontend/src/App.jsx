@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import ServiceForm from "./components/ServiceForm";
 import ServiceList from "./components/ServiceList";
 import ServiceDetails from "./components/ServiceDetails";
-
 import {
   getServices,
   createService,
   updateService,
   deleteService,
+  setAuthToken,
 } from "./api/services";
+import { login as apiLogin } from "./api/auth";
 
 const CATEGORY_OPTIONS = [
   "Health",
@@ -24,6 +25,7 @@ const CATEGORY_OPTIONS = [
   "Recreation",
   "Library",
   "Community Centre",
+  "Settlement",
 ];
 
 function App() {
@@ -41,9 +43,16 @@ function App() {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
   const [total, setTotal] = useState(0);
-
   const totalPages = total > 0 ? Math.ceil(total / pageSize) : 1;
 
+  const [authTokenState, setAuthTokenState] = useState(null);
+  const isAdmin = !!authTokenState;
+
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
+
+  // Load services with current filters/pagination, optionally overriding some
   async function loadServices(overrides = {}) {
     const params = {
       q: overrides.q !== undefined ? overrides.q : searchTerm,
@@ -70,8 +79,16 @@ function App() {
     }
   }
 
+  // On first render: restore token (if any) and load initial services
   useEffect(() => {
-    loadServices();
+    const stored = localStorage.getItem("authToken");
+    if (stored) {
+      setAuthTokenState(stored);
+      setAuthToken(stored);
+    }
+
+    // Initial load with no filters, page 1
+    loadServices({ page: 1 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -82,7 +99,6 @@ function App() {
     } else {
       await createService(formData);
     }
-    // after save, reload from page 1 with current filters
     await loadServices({ page: 1 });
   }
 
@@ -108,18 +124,87 @@ function App() {
     await loadServices({ q: "", city: "", category: "", page: 1 });
   }
 
+  async function handleLogin(e) {
+    e.preventDefault();
+    setLoginError("");
+
+    try {
+      const result = await apiLogin(loginEmail.trim(), loginPassword);
+      setAuthTokenState(result.token);
+      setAuthToken(result.token);
+      localStorage.setItem("authToken", result.token);
+      setLoginPassword("");
+    } catch (err) {
+      setLoginError(err.message || "Login failed");
+    }
+  }
+
+  function handleLogout() {
+    setAuthTokenState(null);
+    setAuthToken(null);
+    localStorage.removeItem("authToken");
+    setEditingService(null);
+  }
+
   return (
     <div style={styles.app}>
       <h1>Ontario Service & Facility Finder</h1>
 
+      <div style={styles.authPanel}>
+        {isAdmin ? (
+          <>
+            <span>Logged in as admin</span>
+            <button
+              type="button"
+              style={styles.filterButtonSecondary}
+              onClick={handleLogout}
+            >
+              Logout
+            </button>
+          </>
+        ) : (
+          <>
+            <form onSubmit={handleLogin} style={styles.authForm}>
+              <div style={styles.authField}>
+                <label style={styles.filterLabel}>Admin email</label>
+                <input
+                  style={styles.filterInput}
+                  value={loginEmail}
+                  onChange={(e) => setLoginEmail(e.target.value)}
+                  placeholder="admin@example.com"
+                />
+              </div>
+              <div style={styles.authField}>
+                <label style={styles.filterLabel}>Password</label>
+                <input
+                  style={styles.filterInput}
+                  type="password"
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  placeholder="••••••••"
+                />
+              </div>
+              <button type="submit" style={styles.filterButtonPrimary}>
+                Admin login
+              </button>
+            </form>
+            {loginError && <p style={styles.error}>{loginError}</p>}
+          </>
+        )}
+      </div>
+
       {error && <p style={styles.error}>{error}</p>}
 
-      <ServiceForm
-        mode={editingService ? "edit" : "create"}
-        initialValues={editingService}
-        onSave={handleSave}
-        onCancel={() => setEditingService(null)}
-      />
+      {isAdmin ? (
+        <ServiceForm
+          mode={editingService ? "edit" : "create"}
+          initialValues={editingService}
+          onSave={handleSave}
+          onCancel={() => setEditingService(null)}
+        />
+      ) : (
+        <p style={styles.info}>Admin login required to add or edit services.</p>
+      )}
 
       <form onSubmit={handleSearch} style={styles.filterBar}>
         <div style={styles.filterField}>
@@ -211,12 +296,17 @@ function App() {
 
           <ServiceList
             services={services}
-            onDelete={handleDelete}
-            onEdit={(service) => {
-              setEditingService(service);
-              setSelectedService(null);
-            }}
+            onDelete={isAdmin ? handleDelete : undefined}
+            onEdit={
+              isAdmin
+                ? (service) => {
+                    setEditingService(service);
+                    setSelectedService(null);
+                  }
+                : undefined
+            }
             onView={(service) => setSelectedService(service)}
+            isAdmin={isAdmin}
           />
 
           {selectedService && (
@@ -245,6 +335,10 @@ const styles = {
   error: {
     color: "red",
     marginBottom: 12,
+  },
+  info: {
+    marginBottom: 16,
+    fontStyle: "italic",
   },
   filterBar: {
     display: "flex",
@@ -308,6 +402,25 @@ const styles = {
   },
   paginationInfo: {
     fontSize: 14,
+  },
+  authPanel: {
+    display: "flex",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+    gap: 16,
+    marginBottom: 16,
+    flexWrap: "wrap",
+  },
+  authForm: {
+    display: "flex",
+    gap: 12,
+    flexWrap: "wrap",
+    alignItems: "flex-end",
+  },
+  authField: {
+    display: "flex",
+    flexDirection: "column",
+    minWidth: 200,
   },
 };
 
