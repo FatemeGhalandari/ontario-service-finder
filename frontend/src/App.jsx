@@ -42,10 +42,15 @@ function App() {
   const [cityFilter, setCityFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
 
+  const [sortBy, setSortBy] = useState("createdAt");
+  const [sortDirection, setSortDirection] = useState("desc");
+
   const [editingService, setEditingService] = useState(null);
   const [selectedService, setSelectedService] = useState(null);
 
   const [viewMode, setViewMode] = useState("list"); // 'list' or 'map'
+
+  const [viewFavoritesOnly, setViewFavoritesOnly] = useState(false);
 
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
@@ -59,10 +64,27 @@ function App() {
   const [loginPassword, setLoginPassword] = useState("");
   const [loginError, setLoginError] = useState("");
 
+  const [favoriteIds, setFavoriteIds] = useState(() => {
+    const favRaw = localStorage.getItem("favoriteServiceIds");
+    if (!favRaw) return [];
+    try {
+      const parsed = JSON.parse(favRaw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const visibleServices = viewFavoritesOnly
+    ? services.filter((s) => favoriteIds.includes(s.id))
+    : services;
+
   const exportQuery = buildServicesQueryString({
     q: searchTerm,
     city: cityFilter,
     category: categoryFilter,
+    sortBy,
+    sortDirection,
   });
 
   const exportUrl = exportQuery
@@ -76,6 +98,11 @@ function App() {
       city: overrides.city !== undefined ? overrides.city : cityFilter,
       category:
         overrides.category !== undefined ? overrides.category : categoryFilter,
+      sortBy: overrides.sortBy !== undefined ? overrides.sortBy : sortBy,
+      sortDirection:
+        overrides.sortDirection !== undefined
+          ? overrides.sortDirection
+          : sortDirection,
       page: overrides.page !== undefined ? overrides.page : page,
       pageSize:
         overrides.pageSize !== undefined ? overrides.pageSize : pageSize,
@@ -109,6 +136,16 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    localStorage.setItem("favoriteServiceIds", JSON.stringify(favoriteIds));
+  }, [favoriteIds]);
+
+  function handleToggleFavorite(id) {
+    setFavoriteIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  }
+
   async function handleSave(formData) {
     if (editingService) {
       await updateService(editingService.id, formData);
@@ -138,7 +175,17 @@ function App() {
     setSearchTerm("");
     setCityFilter("");
     setCategoryFilter("");
-    await loadServices({ q: "", city: "", category: "", page: 1 });
+    setSortBy("createdAt");
+    setSortDirection("desc");
+    setViewFavoritesOnly(false);
+    await loadServices({
+      q: "",
+      city: "",
+      category: "",
+      sortBy: "createdAt",
+      sortDirection: "desc",
+      page: 1,
+    });
   }
 
   async function handleLogin(e) {
@@ -260,6 +307,42 @@ function App() {
           </select>
         </div>
 
+        <div style={styles.filterField}>
+          <label style={styles.filterLabel}>Sort by</label>
+          <select
+            style={styles.filterInput}
+            value={`${sortBy}:${sortDirection}`}
+            onChange={(e) => {
+              const [sb, sd] = e.target.value.split(":");
+              setSortBy(sb);
+              setSortDirection(sd);
+              // If you want immediate reload on sort change:
+              loadServices({ sortBy: sb, sortDirection: sd, page: 1 });
+            }}
+          >
+            <option value="createdAt:desc">Newest first</option>
+            <option value="createdAt:asc">Oldest first</option>
+            <option value="name:asc">Name A–Z</option>
+            <option value="name:desc">Name Z–A</option>
+            <option value="city:asc">City A–Z</option>
+            <option value="city:desc">City Z–A</option>
+            <option value="category:asc">Category A–Z</option>
+            <option value="category:desc">Category Z–A</option>
+          </select>
+        </div>
+
+        <div style={styles.filterField}>
+          <label style={styles.filterLabel}>Favorites</label>
+          <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <input
+              type="checkbox"
+              checked={viewFavoritesOnly}
+              onChange={(e) => setViewFavoritesOnly(e.target.checked)}
+            />
+            <span>Show favorites only</span>
+          </label>
+        </div>
+
         <div style={styles.filterButtons}>
           <button type="submit" style={styles.filterButtonPrimary}>
             Apply
@@ -347,7 +430,7 @@ function App() {
           {viewMode === "list" ? (
             <>
               <ServiceList
-                services={services}
+                services={visibleServices}
                 onDelete={isAdmin ? handleDelete : undefined}
                 onEdit={
                   isAdmin
@@ -359,17 +442,34 @@ function App() {
                 }
                 onView={(service) => setSelectedService(service)}
                 isAdmin={isAdmin}
+                favoriteIds={favoriteIds}
+                onToggleFavorite={handleToggleFavorite}
               />
 
               {selectedService && (
                 <ServiceDetails
                   service={selectedService}
                   onClose={() => setSelectedService(null)}
+                  isFavorite={favoriteIds.includes(selectedService.id)}
+                  onToggleFavorite={handleToggleFavorite}
                 />
               )}
             </>
           ) : (
-            <ServiceMap services={services} />
+            <>
+              <ServiceMap
+                services={visibleServices}
+                onSelect={(service) => setSelectedService(service)}
+              />
+              {selectedService && (
+                <ServiceDetails
+                  service={selectedService}
+                  onClose={() => setSelectedService(null)}
+                  isFavorite={favoriteIds.includes(selectedService.id)}
+                  onToggleFavorite={handleToggleFavorite}
+                />
+              )}
+            </>
           )}
         </>
       )}

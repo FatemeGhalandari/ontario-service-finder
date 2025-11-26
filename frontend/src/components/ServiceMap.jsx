@@ -15,7 +15,7 @@ const markerIcon = new L.Icon({
   shadowSize: [41, 41],
 });
 
-export default function ServiceMap({ services }) {
+export default function ServiceMap({ services, onSelect, favoriteIds = [] }) {
   const servicesWithCoords = services.filter(
     (s) =>
       typeof s.latitude === "number" &&
@@ -50,7 +50,10 @@ export default function ServiceMap({ services }) {
               icon={markerIcon}
             >
               <Popup>
-                <strong>{s.name}</strong>
+                <strong>
+                  {favoriteIds.includes(s.id) ? "★ " : ""}
+                  {s.name}
+                </strong>
                 <br />
                 {s.category && (
                   <>
@@ -74,13 +77,25 @@ export default function ServiceMap({ services }) {
                   </>
                 )}
                 {s.website && (
-                  <a
-                    href={normalizeUrl(s.website)}
-                    target="_blank"
-                    rel="noreferrer"
+                  <>
+                    <a
+                      href={normalizeUrl(s.website)}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Website
+                    </a>
+                    <br />
+                  </>
+                )}
+                {onSelect && (
+                  <button
+                    type="button"
+                    style={styles.popupButton}
+                    onClick={() => onSelect(s)}
                   >
-                    Website
-                  </a>
+                    View details
+                  </button>
                 )}
               </Popup>
             </Marker>
@@ -107,10 +122,20 @@ const styles = {
     overflow: "hidden",
     backgroundColor: "#fff",
     width: "100%",
-    height: 400, // fixed height for the map area
+    height: 400,
   },
   map: {
     width: "100%",
     height: "100%",
+  },
+  popupButton: {
+    marginTop: 4,
+    padding: "4px 8px",
+    borderRadius: 4,
+    border: "1px solid #007bff",
+    backgroundColor: "#fff",
+    color: "#007bff",
+    cursor: "pointer",
+    fontSize: 12,
   },
 };

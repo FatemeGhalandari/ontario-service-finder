@@ -252,11 +252,19 @@ There is also a global error handler that returns a standard JSON shape for unha
 
 # Frontend
 
+
+## Install and run
+
 ```bash
-Install and run
 cd frontend
 npm install
 npm run dev
+```
+
+Create `frontend/.env` with:
+
+```env
+VITE_API_BASE_URL="http://localhost:4000/api"
 ```
 
 The frontend will run on something like:

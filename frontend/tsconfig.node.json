@@ -16,6 +16,8 @@
 
     /* Linting */
     "strict": true,
+    "composite": true,
+    "allowSyntheticDefaultImports": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,

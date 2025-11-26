@@ -4,9 +4,16 @@ export default function ServiceList({
   onEdit,
   onView,
   isAdmin = false,
+  favoriteIds = [],
+  onToggleFavorite,
 }) {
   if (!services.length) {
-    return <p>No services yet. Add one above.</p>;
+    return (
+      <p>
+        No services found for the current filters. Try clearing filters or
+        adjusting your search.
+      </p>
+    );
   }
 
   return (
@@ -51,6 +58,17 @@ export default function ServiceList({
                   onClick={() => onView && onView(s)}
                 >
                   View
+                </button>
+                <button
+                  style={
+                    favoriteIds.includes(s.id)
+                      ? styles.favoriteButtonActive
+                      : styles.favoriteButton
+                  }
+                  onClick={() => onToggleFavorite && onToggleFavorite(s.id)}
+                  type="button"
+                >
+                  {favoriteIds.includes(s.id) ? "★ Saved" : "☆ Save"}
                 </button>
                 {isAdmin && onEdit && (
                   <button style={styles.smallButton} onClick={() => onEdit(s)}>
@@ -120,5 +138,24 @@ const styles = {
     backgroundColor: "#dc3545",
     color: "#fff",
     cursor: "pointer",
+  },
+  favoriteButton: {
+    padding: "4px 8px",
+    marginLeft: 4,
+    borderRadius: 4,
+    border: "1px solid #ccc",
+    backgroundColor: "#fff",
+    cursor: "pointer",
+    fontSize: 12,
+  },
+  favoriteButtonActive: {
+    padding: "4px 8px",
+    marginLeft: 4,
+    borderRadius: 4,
+    border: "1px solid #ffc107",
+    backgroundColor: "#fff7e0",
+    color: "#c47f00",
+    cursor: "pointer",
+    fontSize: 12,
   },
 };

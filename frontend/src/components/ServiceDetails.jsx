@@ -1,13 +1,31 @@
-export default function ServiceDetails({ service, onClose }) {
+export default function ServiceDetails({
+  service,
+  onClose,
+  isFavorite = false,
+  onToggleFavorite,
+}) {
   if (!service) return null;
 
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        <h2>Service details</h2>
-        <button type="button" style={styles.closeButton} onClick={onClose}>
-          Close
-        </button>
+        <h2 style={styles.title}>{service.name}</h2>
+        <div style={styles.headerActions}>
+          {onToggleFavorite && (
+            <button
+              type="button"
+              style={
+                isFavorite ? styles.favoriteButtonActive : styles.favoriteButton
+              }
+              onClick={() => onToggleFavorite(service.id)}
+            >
+              {isFavorite ? "★ Saved" : "☆ Save"}
+            </button>
+          )}
+          <button style={styles.closeButton} onClick={onClose} type="button">
+            Close
+          </button>
+        </div>
       </div>
 
       <div style={styles.row}>
@@ -127,5 +145,27 @@ const styles = {
   label: {
     width: 110,
     fontWeight: "bold",
+  },
+  headerActions: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+  },
+  favoriteButton: {
+    padding: "4px 8px",
+    borderRadius: 4,
+    border: "1px solid #ccc",
+    backgroundColor: "#fff",
+    cursor: "pointer",
+    fontSize: 12,
+  },
+  favoriteButtonActive: {
+    padding: "4px 8px",
+    borderRadius: 4,
+    border: "1px solid #ffc107",
+    backgroundColor: "#fff7e0",
+    color: "#c47f00",
+    cursor: "pointer",
+    fontSize: 12,
   },
 };

@@ -1,4 +1,5 @@
-export const API_BASE_URL = "http://localhost:4000/api";
+export const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:4000/api";
 
 let authToken = null;
 
@@ -35,6 +36,13 @@ export function buildServicesQueryString(params = {}) {
 
   if (params.pageSize) {
     searchParams.set("pageSize", String(params.pageSize));
+  }
+  if (params.sortBy) {
+    searchParams.set("sortBy", params.sortBy);
+  }
+
+  if (params.sortDirection) {
+    searchParams.set("sortDirection", params.sortDirection);
   }
 
   return searchParams.toString();

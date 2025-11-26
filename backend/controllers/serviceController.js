@@ -36,6 +36,22 @@ function buildServiceWhereClause({ q, city, category }) {
   return where;
 }
 
+function buildServiceOrderBy({ sortBy, sortDirection }) {
+  const direction = sortDirection === "asc" ? "asc" : "desc";
+
+  switch (sortBy) {
+    case "name":
+      return [{ name: direction }];
+    case "city":
+      return [{ city: direction }, { name: "asc" }];
+    case "category":
+      return [{ category: direction }, { name: "asc" }];
+    case "createdAt":
+    default:
+      return [{ createdAt: direction }];
+  }
+}
+
 function parseCoordinate(value, min, max, fieldName) {
   if (value === undefined || value === null || value === "") {
     return null;
@@ -51,34 +67,18 @@ function parseCoordinate(value, min, max, fieldName) {
 }
 
 async function listServices(req, res, next) {
-  const { q, city, category, page = "1", pageSize = "10" } = req.query;
+  const {
+    q,
+    city,
+    category,
+    page = "1",
+    pageSize = "10",
+    sortBy = "createdAt",
+    sortDirection = "desc",
+  } = req.query;
 
   const where = buildServiceWhereClause({ q, city, category });
-
-  // if (q && q.trim()) {
-  //   where.OR = [
-  //     { name: { contains: q, mode: "insensitive" } },
-  //     { address: { contains: q, mode: "insensitive" } },
-  //     { city: { contains: q, mode: "insensitive" } },
-  //     { category: { contains: q, mode: "insensitive" } },
-  //     { postalCode: { contains: q, mode: "insensitive" } },
-  //   ];
-  // }
-
-  // if (city && city.trim()) {
-  //   where.city = {
-  //     equals: city.trim(),
-  //     mode: "insensitive",
-  //   };
-  // }
-
-  // if (category && category.trim()) {
-  //   where.category = {
-  //     equals: category.trim(),
-  //     mode: "insensitive",
-  //   };
-  // }
-
+  const orderBy = buildServiceOrderBy({ sortBy, sortDirection });
   const pageNumber = Math.max(parseInt(page, 10) || 1, 1);
   const perPage = Math.min(Math.max(parseInt(pageSize, 10) || 10, 1), 100);
   const skip = (pageNumber - 1) * perPage;
@@ -88,7 +88,7 @@ async function listServices(req, res, next) {
       prisma.service.count({ where }),
       prisma.service.findMany({
         where,
-        orderBy: { createdAt: "desc" },
+        orderBy,
         skip,
         take: perPage,
       }),
@@ -108,13 +108,20 @@ async function listServices(req, res, next) {
 }
 
 async function exportServices(req, res, next) {
-  const { q, city, category } = req.query;
+  const {
+    q,
+    city,
+    category,
+    sortBy = "createdAt",
+    sortDirection = "desc",
+  } = req.query;
   const where = buildServiceWhereClause({ q, city, category });
+  const orderBy = buildServiceOrderBy({ sortBy, sortDirection });
 
   try {
     const services = await prisma.service.findMany({
       where,
-      orderBy: [{ city: "asc" }, { name: "asc" }],
+      orderBy,
     });
 
     const headers = [
