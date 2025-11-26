@@ -6,6 +6,7 @@ The app lets users search, filter, and view details for services such as health 
 
 ## Table of contents
 
+- [Project highlights](#project-highlights)
 - [Tech stack](#tech-stack)
 - [Project structure](#project-structure)
 - [Backend](#backend)
@@ -20,6 +21,22 @@ The app lets users search, filter, and view details for services such as health 
   - [Install and run](#install-and-run)
   - [Frontend features](#frontend-features)
 - [Successful login](#successful-login)
+  - [Running in production](#running-in-production)
+
+## Project highlights
+
+- Full stack service directory for Ontario with search, filters, and detailed views
+- Map view using Leaflet to visualize services geographically with markers and popups
+- Admin authentication (JWT) with protected routes and admin-only CRUD operations
+- Client-side favorites with persistence in localStorage and “favorites only” filter
+- CSV export that respects current filters and sort order
+- Admin analytics dashboard with aggregated stats and bar chart (Recharts)
+- PostgreSQL + Prisma with migrations, seeding, and location (lat/long) fields
+- Backend validation and error handling using Zod and structured JSON responses
+- Automated tests:
+  - Backend: Jest + Supertest integration tests for auth and service CRUD
+  - Frontend: Vitest + React Testing Library component tests
+- Environment-based configuration on both backend and frontend, ready for deployment
 
 ## Tech stack
 
@@ -252,7 +269,6 @@ There is also a global error handler that returns a standard JSON shape for unha
 
 # Frontend
 
-
 ## Install and run
 
 ```bash
@@ -324,3 +340,44 @@ npm run dev
 ```
 
 Open the frontend URL in your browser. You should see the seeded Ontario services immediately on first load.
+
+## Running in production
+
+### Backend (API)
+
+1. Set environment variables on the server:
+
+   ```env
+   DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/ontario_service_finder?schema=public"
+   JWT_SECRET="a-long-random-secret"
+   ADMIN_EMAIL="admin@example.com"
+   ADMIN_PASSWORD="change-me"
+   FRONTEND_ORIGIN="https://your-frontend-host.com"
+   PORT=4000
+   ```
+
+2. Install dependencies and run migrations:
+
+```bash
+cd backend
+npm install
+npx prisma migrate deploy
+npm run seed   # optional, for demo data
+npm start
+```
+
+### Frontend (React)
+
+1. Set API base URL in `frontend/.env`:
+
+```env
+VITE_API_BASE_URL="https://your-backend-host.com/api"
+```
+
+2. Build static assets:
+
+```bash
+cd frontend
+npm install
+npm run build
+```

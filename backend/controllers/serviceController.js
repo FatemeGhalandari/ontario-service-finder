@@ -330,6 +330,43 @@ async function deleteService(req, res, next) {
   }
 }
 
+async function getServiceStats(req, res, next) {
+  try {
+    const totalServices = await prisma.service.count();
+
+    const byCityRaw = await prisma.service.groupBy({
+      by: ["city"],
+      _count: { _all: true },
+      orderBy: { city: "asc" },
+    });
+
+    const byCategoryRaw = await prisma.service.groupBy({
+      by: ["category"],
+      _count: { _all: true },
+      orderBy: { category: "asc" },
+    });
+
+    const byCity = byCityRaw.map((row) => ({
+      city: row.city,
+      count: row._count._all,
+    }));
+
+    const byCategory = byCategoryRaw.map((row) => ({
+      category: row.category || "Uncategorized",
+      count: row._count._all,
+    }));
+
+    res.json({
+      totalServices,
+      byCity,
+      byCategory,
+    });
+  } catch (err) {
+    console.error("Error getting service stats", err);
+    next(err);
+  }
+}
+
 module.exports = {
   listServices,
   exportServices,
@@ -337,4 +374,5 @@ module.exports = {
   createService,
   updateService,
   deleteService,
+  getServiceStats,
 };

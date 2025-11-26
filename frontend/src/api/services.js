@@ -7,7 +7,7 @@ export function setAuthToken(token) {
   authToken = token;
 }
 
-function buildAuthHeaders(extra = {}) {
+export function buildAuthHeaders(extra = {}) {
   const headers = { ...extra };
   if (authToken) {
     headers.Authorization = `Bearer ${authToken}`;

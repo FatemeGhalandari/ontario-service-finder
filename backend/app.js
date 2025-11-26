@@ -4,12 +4,33 @@ const cors = require("cors");
 
 const serviceRoutes = require("./routes/serviceRoutes");
 const authRoutes = require("./routes/authRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 const { ZodError, formatZodError } = require("./validation/serviceSchemas");
 
 const app = express();
 
-// Middleware
-app.use(cors());
+const allowedOrigins = ["http://localhost:3000", "http://localhost:4173"];
+
+if (process.env.FRONTEND_ORIGIN) {
+  allowedOrigins.push(process.env.FRONTEND_ORIGIN);
+}
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      // Allow non-browser/CLI tools with no origin
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      console.warn("Blocked CORS origin:", origin);
+      return callback(new Error("Not allowed by CORS"));
+    },
+    credentials: false,
+  })
+);
+
 app.use(express.json());
 
 // Simple logger
@@ -33,6 +54,9 @@ app.use("/api/auth", authRoutes);
 
 // Service routes
 app.use("/api/services", serviceRoutes);
+
+// Admin routes - protected by middleware inside adminRoutes
+app.use("/api/admin", adminRoutes);
 
 // Global error handler
 app.use((err, req, res, next) => {

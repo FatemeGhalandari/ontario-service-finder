@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import ServiceForm from "./components/ServiceForm";
 import ServiceList from "./components/ServiceList";
 import ServiceDetails from "./components/ServiceDetails";
+import AdminStats from "./components/AdminStats";
 
 import {
   API_BASE_URL,
@@ -258,6 +259,8 @@ function App() {
       </div>
 
       {error && <p style={styles.error}>{error}</p>}
+      
+      {isAdmin && <AdminStats visible={isAdmin} />}
 
       {isAdmin ? (
         <ServiceForm
