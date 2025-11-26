@@ -21,13 +21,27 @@ app.use(
       // Allow non-browser/CLI tools with no origin
       if (!origin) return callback(null, true);
 
-      if (allowedOrigins.includes(origin)) {
+      // Always allow localhost (any port) for dev / preview
+      if (origin.startsWith("http://localhost")) {
         return callback(null, true);
       }
+
+      // Allow any Vercel frontend (production + previews)
+      if (origin.endsWith(".vercel.app")) {
+        return callback(null, true);
+      }
+
+      // Optionally, allow one specific frontend origin via env
+      if (
+        process.env.FRONTEND_ORIGIN &&
+        origin === process.env.FRONTEND_ORIGIN
+      ) {
+        return callback(null, true);
+      }
+
       console.warn("Blocked CORS origin:", origin);
       return callback(new Error("Not allowed by CORS"));
     },
-    credentials: false,
   })
 );
 
