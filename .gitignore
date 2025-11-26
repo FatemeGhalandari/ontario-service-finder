@@ -34,7 +34,7 @@ backend/node_modules/
 # Prisma
 backend/prisma/dev.db
 backend/prisma/*.db-journal
-backend/prisma/migrations/
+
 
 # Terraform
 infra/.terraform/
@@ -44,3 +44,6 @@ terraform.tfstate.backup
 
 # Docker
 docker-data/
+
+backend/.env
+frontend/.env
