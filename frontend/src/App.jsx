@@ -210,287 +210,304 @@ function App() {
     localStorage.removeItem("authToken");
     setEditingService(null);
   }
-
   return (
-    <div style={styles.app}>
-      <h1>Ontario Service & Facility Finder</h1>
-
-      <div style={styles.authPanel}>
-        {isAdmin ? (
-          <>
-            <span>Logged in as admin</span>
-            <button
-              type="button"
-              style={styles.filterButtonSecondary}
-              onClick={handleLogout}
-            >
-              Logout
-            </button>
-          </>
-        ) : (
-          <>
-            <form onSubmit={handleLogin} style={styles.authForm}>
-              <div style={styles.authField}>
-                <label style={styles.filterLabel}>Admin email</label>
-                <input
-                  style={styles.filterInput}
-                  value={loginEmail}
-                  onChange={(e) => setLoginEmail(e.target.value)}
-                  placeholder="admin@example.com"
-                />
-              </div>
-              <div style={styles.authField}>
-                <label style={styles.filterLabel}>Password</label>
-                <input
-                  style={styles.filterInput}
-                  type="password"
-                  value={loginPassword}
-                  onChange={(e) => setLoginPassword(e.target.value)}
-                  placeholder="••••••••"
-                />
-              </div>
-              <button type="submit" style={styles.filterButtonPrimary}>
-                Admin login
-              </button>
-            </form>
-            {loginError && <p style={styles.error}>{loginError}</p>}
-          </>
-        )}
-      </div>
-
-      {error && <p style={styles.error}>{error}</p>}
-      
-      {isAdmin && <AdminStats visible={isAdmin} />}
-
-      {isAdmin ? (
-        <ServiceForm
-          mode={editingService ? "edit" : "create"}
-          initialValues={editingService}
-          onSave={handleSave}
-          onCancel={() => setEditingService(null)}
-        />
-      ) : (
-        <p style={styles.info}>Admin login required to add or edit services.</p>
-      )}
-
-      <form onSubmit={handleSearch} style={styles.filterBar}>
-        <div style={styles.filterField}>
-          <label style={styles.filterLabel}>Search</label>
-          <input
-            style={styles.filterInput}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Name, address, category..."
-          />
-        </div>
-
-        <div style={styles.filterField}>
-          <label style={styles.filterLabel}>City</label>
-          <input
-            style={styles.filterInput}
-            value={cityFilter}
-            onChange={(e) => setCityFilter(e.target.value)}
-            placeholder="e.g. Toronto"
-          />
-        </div>
-
-        <div style={styles.filterField}>
-          <label style={styles.filterLabel}>Category</label>
-          <select
-            style={styles.filterInput}
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-          >
-            <option value="">All categories</option>
-            {CATEGORY_OPTIONS.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div style={styles.filterField}>
-          <label style={styles.filterLabel}>Sort by</label>
-          <select
-            style={styles.filterInput}
-            value={`${sortBy}:${sortDirection}`}
-            onChange={(e) => {
-              const [sb, sd] = e.target.value.split(":");
-              setSortBy(sb);
-              setSortDirection(sd);
-              // If you want immediate reload on sort change:
-              loadServices({ sortBy: sb, sortDirection: sd, page: 1 });
-            }}
-          >
-            <option value="createdAt:desc">Newest first</option>
-            <option value="createdAt:asc">Oldest first</option>
-            <option value="name:asc">Name A–Z</option>
-            <option value="name:desc">Name Z–A</option>
-            <option value="city:asc">City A–Z</option>
-            <option value="city:desc">City Z–A</option>
-            <option value="category:asc">Category A–Z</option>
-            <option value="category:desc">Category Z–A</option>
-          </select>
-        </div>
-
-        <div style={styles.filterField}>
-          <label style={styles.filterLabel}>Favorites</label>
-          <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <input
-              type="checkbox"
-              checked={viewFavoritesOnly}
-              onChange={(e) => setViewFavoritesOnly(e.target.checked)}
-            />
-            <span>Show favorites only</span>
-          </label>
-        </div>
-
-        <div style={styles.filterButtons}>
-          <button type="submit" style={styles.filterButtonPrimary}>
-            Apply
-          </button>
-          <button
-            type="button"
-            style={styles.filterButtonSecondary}
-            onClick={handleClearFilters}
-          >
-            Clear
-          </button>
-          <a
-            href={exportUrl}
-            style={styles.filterButtonSecondary}
-            download="services.csv"
-          >
-            Export CSV
-          </a>
-        </div>
-      </form>
-
-      {loading ? (
-        <p>Loading services...</p>
-      ) : (
-        <>
-          <div style={styles.viewToggle}>
-            <span>View:</span>
-            <button
-              type="button"
-              style={
-                viewMode === "list"
-                  ? styles.viewToggleButtonActive
-                  : styles.viewToggleButton
-              }
-              onClick={() => setViewMode("list")}
-            >
-              List
-            </button>
-            <button
-              type="button"
-              style={
-                viewMode === "map"
-                  ? styles.viewToggleButtonActive
-                  : styles.viewToggleButton
-              }
-              onClick={() => setViewMode("map")}
-            >
-              Map
-            </button>
+    <div className="app-shell">
+      <main className="app-card">
+        <header className="app-header">
+          <div>
+            <h1 className="app-title">Ontario Service &amp; Facility Finder</h1>
+            <p className="app-subtitle">
+              Find community services across Ontario, filter by city and
+              category, and manage an admin view.
+            </p>
           </div>
+        </header>
 
-          {viewMode === "list" && total > 0 && (
-            <div style={styles.paginationBar}>
-              <button
-                type="button"
-                style={styles.paginationButton}
-                disabled={page <= 1}
-                onClick={() => loadServices({ page: page - 1 })}
-              >
-                Previous
-              </button>
-
-              <span style={styles.paginationInfo}>
-                Page {page} of {totalPages}{" "}
-                {total > 0 && (
-                  <>
-                    {" "}
-                    (showing {(page - 1) * pageSize + 1} to{" "}
-                    {Math.min(page * pageSize, total)} of {total})
-                  </>
-                )}
-              </span>
-
-              <button
-                type="button"
-                style={styles.paginationButton}
-                disabled={page >= totalPages}
-                onClick={() => loadServices({ page: page + 1 })}
-              >
-                Next
-              </button>
-            </div>
-          )}
-
-          {viewMode === "list" ? (
+        <div className="auth-panel">
+          {isAdmin ? (
             <>
-              <ServiceList
-                services={visibleServices}
-                onDelete={isAdmin ? handleDelete : undefined}
-                onEdit={
-                  isAdmin
-                    ? (service) => {
-                        setEditingService(service);
-                        setSelectedService(null);
-                      }
-                    : undefined
-                }
-                onView={(service) => setSelectedService(service)}
-                isAdmin={isAdmin}
-                favoriteIds={favoriteIds}
-                onToggleFavorite={handleToggleFavorite}
-              />
-
-              {selectedService && (
-                <ServiceDetails
-                  service={selectedService}
-                  onClose={() => setSelectedService(null)}
-                  isFavorite={favoriteIds.includes(selectedService.id)}
-                  onToggleFavorite={handleToggleFavorite}
-                />
-              )}
+              <span className="auth-status">Logged in as admin</span>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={handleLogout}
+              >
+                Logout
+              </button>
             </>
           ) : (
             <>
-              <ServiceMap
-                services={visibleServices}
-                onSelect={(service) => setSelectedService(service)}
-              />
-              {selectedService && (
-                <ServiceDetails
-                  service={selectedService}
-                  onClose={() => setSelectedService(null)}
-                  isFavorite={favoriteIds.includes(selectedService.id)}
-                  onToggleFavorite={handleToggleFavorite}
-                />
-              )}
+              <form onSubmit={handleLogin} className="auth-form">
+                <div className="auth-field">
+                  <label className="field-label">Admin email</label>
+                  <input
+                    className="field-input"
+                    value={loginEmail}
+                    onChange={(e) => setLoginEmail(e.target.value)}
+                    placeholder="admin@example.com"
+                  />
+                </div>
+                <div className="auth-field">
+                  <label className="field-label">Password</label>
+                  <input
+                    className="field-input"
+                    type="password"
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    placeholder="••••••••"
+                  />
+                </div>
+                <button type="submit" className="btn-primary">
+                  Admin login
+                </button>
+              </form>
+              {loginError && <p className="error-text">{loginError}</p>}
             </>
           )}
-        </>
-      )}
+        </div>
+
+        {error && <p className="error-text">{error}</p>}
+
+        {isAdmin && <AdminStats visible={isAdmin} />}
+
+        {isAdmin ? (
+          <ServiceForm
+            mode={editingService ? "edit" : "create"}
+            initialValues={editingService}
+            onSave={handleSave}
+            onCancel={() => setEditingService(null)}
+          />
+        ) : (
+          <p className="info-text">
+            Admin login required to add or edit services.
+          </p>
+        )}
+
+        <form onSubmit={handleSearch} className="filter-bar">
+          <div className="filter-field">
+            <label className="field-label">Search</label>
+            <input
+              className="field-input"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Name, address, category..."
+            />
+          </div>
+
+          <div className="filter-field">
+            <label className="field-label">City</label>
+            <input
+              className="field-input"
+              value={cityFilter}
+              onChange={(e) => setCityFilter(e.target.value)}
+              placeholder="e.g. Toronto"
+            />
+          </div>
+
+          <div className="filter-field">
+            <label className="field-label">Category</label>
+            <select
+              className="field-input"
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+            >
+              <option value="">All categories</option>
+              {CATEGORY_OPTIONS.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="filter-field">
+            <label className="field-label">Sort by</label>
+            <select
+              className="field-input"
+              value={`${sortBy}:${sortDirection}`}
+              onChange={(e) => {
+                const [sb, sd] = e.target.value.split(":");
+                setSortBy(sb);
+                setSortDirection(sd);
+                loadServices({ sortBy: sb, sortDirection: sd, page: 1 });
+              }}
+            >
+              <option value="createdAt:desc">Newest first</option>
+              <option value="createdAt:asc">Oldest first</option>
+              <option value="name:asc">Name A–Z</option>
+              <option value="name:desc">Name Z–A</option>
+              <option value="city:asc">City A–Z</option>
+              <option value="city:desc">City Z–A</option>
+              <option value="category:asc">Category A–Z</option>
+              <option value="category:desc">Category Z–A</option>
+            </select>
+          </div>
+
+          <div className="filter-field">
+            <label className="field-label">Favorites</label>
+            <label className="favorites-toggle">
+              <input
+                type="checkbox"
+                checked={viewFavoritesOnly}
+                onChange={(e) => setViewFavoritesOnly(e.target.checked)}
+              />
+              <span>Show favorites only</span>
+            </label>
+          </div>
+
+          <div className="filter-buttons">
+            <button type="submit" className="btn-primary">
+              Apply
+            </button>
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={handleClearFilters}
+            >
+              Clear
+            </button>
+            <a
+              href={exportUrl}
+              className="btn-secondary"
+              download="services.csv"
+            >
+              Export CSV
+            </a>
+          </div>
+        </form>
+
+        {loading ? (
+          <p className="info-text">Loading services...</p>
+        ) : (
+          <>
+            <div className="view-toggle">
+              <span>View:</span>
+              <button
+                type="button"
+                className={
+                  viewMode === "list"
+                    ? "view-toggle-btn view-toggle-btn-active"
+                    : "view-toggle-btn"
+                }
+                onClick={() => setViewMode("list")}
+              >
+                List
+              </button>
+              <button
+                type="button"
+                className={
+                  viewMode === "map"
+                    ? "view-toggle-btn view-toggle-btn-active"
+                    : "view-toggle-btn"
+                }
+                onClick={() => setViewMode("map")}
+              >
+                Map
+              </button>
+            </div>
+
+            {viewMode === "list" && total > 0 && (
+              <div className="pagination-bar">
+                <button
+                  type="button"
+                  className="pagination-btn"
+                  disabled={page <= 1}
+                  onClick={() => loadServices({ page: page - 1 })}
+                >
+                  Previous
+                </button>
+
+                <span className="pagination-info">
+                  Page {page} of {totalPages}
+                  {total > 0 && (
+                    <>
+                      {" "}
+                      (showing {(page - 1) * pageSize + 1} to{" "}
+                      {Math.min(page * pageSize, total)} of {total})
+                    </>
+                  )}
+                </span>
+
+                <button
+                  type="button"
+                  className="pagination-btn"
+                  disabled={page >= totalPages}
+                  onClick={() => loadServices({ page: page + 1 })}
+                >
+                  Next
+                </button>
+              </div>
+            )}
+
+            {viewMode === "list" ? (
+              <>
+                <ServiceList
+                  services={visibleServices}
+                  onDelete={isAdmin ? handleDelete : undefined}
+                  onEdit={
+                    isAdmin
+                      ? (service) => {
+                          setEditingService(service);
+                          setSelectedService(null);
+                        }
+                      : undefined
+                  }
+                  onView={(service) => setSelectedService(service)}
+                  isAdmin={isAdmin}
+                  favoriteIds={favoriteIds}
+                  onToggleFavorite={handleToggleFavorite}
+                />
+
+                {selectedService && (
+                  <ServiceDetails
+                    service={selectedService}
+                    onClose={() => setSelectedService(null)}
+                    isFavorite={favoriteIds.includes(selectedService.id)}
+                    onToggleFavorite={handleToggleFavorite}
+                  />
+                )}
+              </>
+            ) : (
+              <>
+                <ServiceMap
+                  services={visibleServices}
+                  onSelect={(service) => setSelectedService(service)}
+                />
+                {selectedService && (
+                  <ServiceDetails
+                    service={selectedService}
+                    onClose={() => setSelectedService(null)}
+                    isFavorite={favoriteIds.includes(selectedService.id)}
+                    onToggleFavorite={handleToggleFavorite}
+                  />
+                )}
+              </>
+            )}
+
+            {!loading && visibleServices.length === 0 && (
+              <p className="empty-text">
+                No services found for the current filters. Try clearing filters
+                or adjusting your search.
+              </p>
+            )}
+          </>
+        )}
+      </main>
     </div>
   );
 }
 
 const styles = {
-  app: {
-    maxWidth: 1000,
-    margin: "0 auto",
-    padding: 24,
-    fontFamily:
-      'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-    backgroundColor: "#f5f5f5",
-    color: "#222",
-    minHeight: "100vh",
-  },
+  // app: {
+  //   maxWidth: 1000,
+  //   margin: "0 auto",
+  //   padding: 24,
+  //   fontFamily:
+  //     'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+  //   backgroundColor: "#f5f5f5",
+  //   color: "#222",
+  //   minHeight: "100vh",
+  // },
   error: {
     color: "red",
     marginBottom: 12,
