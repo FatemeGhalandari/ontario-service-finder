@@ -1,5 +1,10 @@
 # Ontario Service & Facility Finder
 
+## Live demo
+
+- Frontend: https://ontario-service-finder.vercel.app/
+- API: https://ontario-service-finder.onrender.com/
+
 A full stack web app for finding community services and facilities across Ontario.
 
 The app lets users search, filter, and view details for services such as health clinics, food banks, housing support, libraries, and community centres. Admins can log in to manage the directory.
