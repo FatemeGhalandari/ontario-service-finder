@@ -1,5 +1,10 @@
-export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:4000/api";
+const DEFAULT_API_BASE_URL = import.meta.env.PROD
+  ? "https://ontario-service-finder.onrender.com/api"
+  : "http://localhost:4000/api";
+
+export const API_BASE_URL = (
+  import.meta.env.VITE_API_BASE_URL || DEFAULT_API_BASE_URL
+).replace(/\/$/, "");
 
 let authToken = null;
 
@@ -37,6 +42,7 @@ export function buildServicesQueryString(params = {}) {
   if (params.pageSize) {
     searchParams.set("pageSize", String(params.pageSize));
   }
+
   if (params.sortBy) {
     searchParams.set("sortBy", params.sortBy);
   }
@@ -47,15 +53,28 @@ export function buildServicesQueryString(params = {}) {
 
   return searchParams.toString();
 }
+
+async function readError(res, fallbackMessage) {
+  try {
+    const body = await res.json();
+    return body?.error || fallbackMessage;
+  } catch {
+    return fallbackMessage;
+  }
+}
+
 export async function getServices(params = {}) {
   const queryString = buildServicesQueryString(params);
-
   const url = queryString
     ? `${API_BASE_URL}/services?${queryString}`
     : `${API_BASE_URL}/services`;
 
   const res = await fetch(url);
-  if (!res.ok) throw new Error("Failed to fetch services");
+
+  if (!res.ok) {
+    throw new Error(await readError(res, "Failed to fetch services"));
+  }
+
   return res.json();
 }
 
@@ -67,26 +86,7 @@ export async function createService(data) {
   });
 
   if (!res.ok) {
-    let message = "Failed to create service";
-
-    try {
-      const errorBody = await res.json();
-      if (errorBody?.error) {
-        message = errorBody.error;
-      }
-      if (errorBody?.details && Array.isArray(errorBody.details)) {
-        const fieldMessages = errorBody.details
-          .map((d) => (d.path ? `${d.path}: ${d.message}` : d.message))
-          .join("; ");
-        if (fieldMessages) {
-          message = `${message} – ${fieldMessages}`;
-        }
-      }
-    } catch {
-      // ignore JSON parse errors
-    }
-
-    throw new Error(message);
+    throw new Error(await readError(res, "Failed to create service"));
   }
 
   return res.json();
@@ -100,26 +100,7 @@ export async function updateService(id, data) {
   });
 
   if (!res.ok) {
-    let message = "Failed to update service";
-
-    try {
-      const errorBody = await res.json();
-      if (errorBody?.error) {
-        message = errorBody.error;
-      }
-      if (errorBody?.details && Array.isArray(errorBody.details)) {
-        const fieldMessages = errorBody.details
-          .map((d) => (d.path ? `${d.path}: ${d.message}` : d.message))
-          .join("; ");
-        if (fieldMessages) {
-          message = `${message} – ${fieldMessages}`;
-        }
-      }
-    } catch {
-      // ignore
-    }
-
-    throw new Error(message);
+    throw new Error(await readError(res, "Failed to update service"));
   }
 
   return res.json();
@@ -132,16 +113,8 @@ export async function deleteService(id) {
   });
 
   if (!res.ok && res.status !== 204) {
-    let message = "Failed to delete service";
-    try {
-      const errorBody = await res.json();
-      if (errorBody?.error) {
-        message = errorBody.error;
-      }
-    } catch {
-      // ignore
-    }
-    throw new Error(message);
+    throw new Error(await readError(res, "Failed to delete service"));
   }
+
   return true;
 }
