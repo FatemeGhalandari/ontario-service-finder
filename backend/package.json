@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "nodemon index.js",
     "start": "node index.js",
-    "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio",
+    "postinstall": "prisma generate",
+    "migrate:deploy": "prisma migrate deploy",
     "seed": "node scripts/seedServices.js",
     "test": "jest"
   },
