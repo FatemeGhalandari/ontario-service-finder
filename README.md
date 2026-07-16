@@ -1,4 +1,5 @@
-# Ontario Service & Facility Finder
+# Ontario Service & Facility Finder  
+<img width="960" height="620" alt="ontario-service-finder-clickthrough" src="https://github.com/user-attachments/assets/c656256f-7162-47b1-b560-334068e6581e" />  
 
 ## Live demo
 
